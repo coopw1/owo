@@ -2,6 +2,7 @@
 #SingleInstance force
 OnExit ForceClose
 TraySetIcon "favicon.ico"
+; TrayTip "coopw's Keybind Manager", "OwO", 4
 
 Reset
 
@@ -18,7 +19,7 @@ MainGui.AddButton("x150 y260 w100 h30", "Reset").OnEvent("Click", Reset)
 MainGui.AddButton("x260 y260 w100 h30", "Save").OnEvent("Click", Save)
 MainGui.AddButton("x370 y260 w100 h30", "Finish").OnEvent("Click", Finish)
 
-Tab := MainGui.AddTab3("x0 y0 w500 h250 -Wrap", ["Keybinds", "Settings"])
+Tab := MainGui.AddTab3("x0 y0 w500 h250 -Wrap", ["Keybinds", "Weapons", "Settings"])
 
 
 ; Create the keybinds tab
@@ -87,14 +88,19 @@ MainGui.Show("w490 h300")
 
 ; Functions
 ForceClose(ExitReason, ExitCode) {
-    ; Make sure the user wants to lose their changes
-    if (MsgBox("Are you sure you want to close the keybind manager? Your changes will be saved.", , "YesNo") = "No") {
-        MainGui.Show()
-        return 1
+    if (ExitReason = "Close") {
+        if (MsgBox("Are you sure you want to close the keybind manager? Your changes will be saved.", , "YesNo") = "No") {
+            MainGui.Show()
+            return 1
+        } else {
+            Save()
+            return 1
+        }
     } else {
-        Save()
-        return 1
+        MsgBox("Error: " ExitReason " (" ExitCode ")")
+        return 0
     }
+
 }
 
 Save(*) {
@@ -131,11 +137,13 @@ Save(*) {
 }
 
 Finish(*) {
-    Save()
     if (MsgBox("Are you sure you want to close the keybind manager? Your changes will be saved.", , "YesNo") = "Yes") {
-        ExitApp()
+        Save()
+        MainGui.Hide()
+
     }
 }
+
 
 Reset(*) {
     global
