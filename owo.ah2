@@ -1,4 +1,4 @@
-#Requires AutoHotkey v2.0
+﻿#Requires AutoHotkey v2.0
 #SingleInstance force
 OnExit ForceClose
 TraySetIcon "favicon.ico"
@@ -6,6 +6,40 @@ TraySetIcon "favicon.ico"
 
 Reset
 
+;
+; Hotkeys
+; Hotkey Hotkey1, sendCommand(Hotkey1, Command1, Cooldown1, Hotkey1LastActivationTime, Hotkey1Active)
+
+for key in Hotkeys {
+    if (key != "") {
+        Hotkey key, RunCommand
+    }
+}
+
+RunCommand(ThisHotkey)
+{
+    global Hotkeys, Commands, Cooldowns, HotkeyLastActivationTimes, HotkeyActives
+    ; Find the index of the hotkey
+    Index := 1
+    while (Index < 8)
+    {
+        if (Hotkeys[Index] = ThisHotkey)
+        {
+            break
+        }
+        Index++
+    }
+
+    ; Send the command
+    if (!HotkeyActives[Index] && (A_TickCount - HotkeyLastActivationTimes[Index] > Cooldowns[Index]))
+    {
+        HotkeyActives[Index] := true
+        HotkeyLastActivationTimes[Index] := A_TickCount
+        Send(Commands[Index])
+    }
+    KeyWait ThisHotkey
+    HotkeyActives[Index] := false
+}
 
 ; Create the main GUI window
 MainGui := Gui()
@@ -198,6 +232,12 @@ Reset(*) {
 
     ExecutableTitle := IniRead("config.ini", "Settings", "ExecutableTitle", "Discord.exe")
 
+
+    ; Store last activation times
+    HotkeyLastActivationTimes := [0, 0, 0, 0, 0, 0, 0]
+
+    ; Store hotkey activation states
+    HotkeyActives := [false, false, false, false, false, false, false]
 }
 
 FormatMS(ms) {
@@ -229,4 +269,15 @@ UpdateCooldownLabel(*) {
         CooldownLabel[i].Text := FormatMS(cooldown)
         i++
     }
+}
+
+sendCommand(Hotkey, Command, Cooldown, LastActivationTime, Active) {
+
+    if (!Active && (A_TickCount - LastActivationTime > Cooldown)) {
+        Active := true
+        LastActivationTime := A_TickCount
+        Send(Command)
+    }
+    KeyWait Hotkey
+    Active := false
 }
