@@ -161,13 +161,31 @@ Save(*) {
     ; Save settings
     IniWrite(MainGui["ChosenExecutableTitle"].Text, "config.ini", "Settings", "ExecutableTitle")
     IniWrite(FirstRun, "config.ini", "Settings", "FirstRun")
+
+    Reset
 }
 
 Finish(*) {
-    if (MsgBox("Are you sure you want to close the keybind manager? Your changes will be saved.", , "YesNo") = "Yes") {
-        Save()
-        MainGui.Hide()
+    ; Check if any changes were made
+    ChangesMade := false
+    count := 1
+    while count < 8
+    {
+        if (MainGui["ChosenHotkey" count].Value != Hotkeys[count] || MainGui["ChosenCommand" count].Value != Commands[count] || MainGui["ChosenCooldown" count].Value != Cooldowns[count]) {
+            ChangesMade := true
+            break
+        }
+        count++
+    }
 
+
+    if (ChangesMade) {
+        if (MsgBox("Are you sure you want to close the keybind manager? Your changes will be saved.", , "YesNo") = "Yes") {
+            Save()
+            MainGui.Hide()
+        }
+    } else {
+        MainGui.Hide()
     }
 }
 
@@ -226,6 +244,8 @@ Reset(*) {
     ; Create Hotkeys
     for key in Hotkeys {
         if (key != "") {
+            WindowFilter := "ahk_exe " ExecutableTitle
+            HotIfWinActive WindowFilter
             Hotkey key, RunCommand
         }
     }
