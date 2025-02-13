@@ -161,6 +161,8 @@ Save(*) {
     ; Save settings
     IniWrite(MainGui["ChosenExecutableTitle"].Text, "config.ini", "Settings", "ExecutableTitle")
     IniWrite(FirstRun, "config.ini", "Settings", "FirstRun")
+
+    Reset
 }
 
 Finish(*) {
