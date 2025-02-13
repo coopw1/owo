@@ -1,131 +1,113 @@
 ﻿#Requires AutoHotkey v2.0
 #SingleInstance force
 OnExit ForceClose
-TraySetIcon "favicon.ico"
-; TrayTip "coopw's Keybind Manager", "OwO", 4
-
 Reset
+TraySetIcon "favicon.ico"
+TrayTip "coopw's Keybind Manager running!", "OwO", 4
 
-;
-; Hotkeys
-; Hotkey Hotkey1, sendCommand(Hotkey1, Command1, Cooldown1, Hotkey1LastActivationTime, Hotkey1Active)
+A_TrayMenu.Delete()
+A_TrayMenu.Add()
+A_TrayMenu.Add("Edit Keybinds", CreateGUI)
+A_TrayMenu.Add()
+A_TrayMenu.Add("Close", (*) => ExitApp())
+A_TrayMenu.Add()
+A_TrayMenu.Default := "Edit Keybinds"
 
-for key in Hotkeys {
-    if (key != "") {
-        Hotkey key, RunCommand
-    }
+if (FirstRun = "true") {
+    CreateGUI()
+    MsgBox("Welcome to coopw's Keybind Manager! This is your first time running the program, so you can edit your keybinds here. From now on, you can access this window by right-clicking the tray icon and selecting 'Edit Keybinds'.")
+    FirstRun := "false"
 }
 
-RunCommand(ThisHotkey)
-{
-    global Hotkeys, Commands, Cooldowns, HotkeyLastActivationTimes, HotkeyActives
-    ; Find the index of the hotkey
-    Index := 1
-    while (Index < 8)
-    {
-        if (Hotkeys[Index] = ThisHotkey)
-        {
-            break
-        }
-        Index++
-    }
 
-    ; Send the command
-    if (!HotkeyActives[Index] && (A_TickCount - HotkeyLastActivationTimes[Index] > Cooldowns[Index]))
-    {
-        HotkeyActives[Index] := true
-        HotkeyLastActivationTimes[Index] := A_TickCount
-        Send(Commands[Index])
-    }
-    KeyWait ThisHotkey
-    HotkeyActives[Index] := false
+CreateGUI(*) {
+    global
+    ; Create the main GUI window
+    MainGui := Gui()
+    MainGui.Title := 'Keybind Manager'
+    MainGui.SetFont("s8 cDefault Norm", "Tahoma")
+
+
+    ; Create default bottom layout
+    MainGui.AddText("x29 y268", "Made by coopw <3")
+    MainGui.AddButton("x150 y260 w100 h30", "Reset").OnEvent("Click", Reset)
+    MainGui.AddButton("x260 y260 w100 h30", "Save").OnEvent("Click", Save)
+    MainGui.AddButton("x370 y260 w100 h30", "Finish").OnEvent("Click", Finish)
+
+    Tab := MainGui.AddTab3("x0 y0 w500 h250 -Wrap", ["Keybinds", "Weapons", "Settings"])
+
+
+    ; Create the keybinds tab
+    Tab.UseTab(1)
+
+    ; Dividing bars
+    MainGui.AddText("x5 y50 w480 h2 0x7")
+    MainGui.AddText("x37 y26 w1 h217 0x7")
+    MainGui.AddText("x152 y26 w1 h217 0x7")
+    MainGui.AddText("x355 y26 w1 h217 0x7")
+
+
+    ; Grid Key
+    MainGui.AddText("x17 y29", "#")
+    MainGui.AddText("x85 y29", "Key")
+    MainGui.AddText("x230 y29", "Command")
+    MainGui.AddText("x390 y29", "Cooldown (ms)")
+
+    ; Number Collumn
+    MainGui.AddText("x17 y61", "1")
+    MainGui.AddText("x17 y87", "2")
+    MainGui.AddText("x17 y113", "3")
+    MainGui.AddText("x17 y139", "4")
+    MainGui.AddText("x17 y165", "5")
+    MainGui.AddText("x17 y191", "6")
+    MainGui.AddText("x17 y217", "7")
+
+    ; Key Collumn
+    MainGui.AddHotkey("x44 y58 w102 h20 vChosenHotkey1", Hotkeys[1])
+    MainGui.AddHotkey("w102 h20 vChosenHotkey2", Hotkeys[2])
+    MainGui.AddHotkey("w102 h20 vChosenHotkey3", Hotkeys[3])
+    MainGui.AddHotkey("w102 h20 vChosenHotkey4", Hotkeys[4])
+    MainGui.AddHotkey("w102 h20 vChosenHotkey5", Hotkeys[5])
+    MainGui.AddHotkey("w102 h20 vChosenHotkey6", Hotkeys[6])
+    MainGui.AddHotkey("w102 h20 vChosenHotkey7", Hotkeys[7])
+
+    ; Keybind Collumn
+    MainGui.AddEdit("x159 y58 w190 h20 vChosenCommand1", Commands[1])
+    MainGui.AddEdit("w190 h20 vChosenCommand2", Commands[2])
+    MainGui.AddEdit("w190 h20 vChosenCommand3", Commands[3])
+    MainGui.AddEdit("w190 h20 vChosenCommand4", Commands[4])
+    MainGui.AddEdit("w190 h20 vChosenCommand5", Commands[5])
+    MainGui.AddEdit("w190 h20 vChosenCommand6", Commands[6])
+    MainGui.AddEdit("w190 h20 vChosenCommand7", Commands[7])
+
+    ; Cooldown Collumn
+    CooldownLabel := Array()
+    MainGui.AddEdit("x362 y58 w80 h20 vChosenCooldown1", Cooldowns[1]).OnEvent("Change", UpdateCooldownLabel)
+    MainGui.AddEdit("w80 h20 vChosenCooldown2", Cooldowns[2]).OnEvent("Change", UpdateCooldownLabel)
+    MainGui.AddEdit("w80 h20 vChosenCooldown3", Cooldowns[3]).OnEvent("Change", UpdateCooldownLabel)
+    MainGui.AddEdit("w80 h20 vChosenCooldown4", Cooldowns[4]).OnEvent("Change", UpdateCooldownLabel)
+    MainGui.AddEdit("w80 h20 vChosenCooldown5", Cooldowns[5]).OnEvent("Change", UpdateCooldownLabel)
+    MainGui.AddEdit("w80 h20 vChosenCooldown6", Cooldowns[6]).OnEvent("Change", UpdateCooldownLabel)
+    MainGui.AddEdit("w80 h20 vChosenCooldown7", Cooldowns[7]).OnEvent("Change", UpdateCooldownLabel)
+
+    CooldownLabel.Push(MainGui.AddText("x450 y61 w40 h20", FormatMS(Cooldowns[1])))
+    CooldownLabel.Push(MainGui.AddText("x450 y87 w40 h20", FormatMS(Cooldowns[2])))
+    CooldownLabel.Push(MainGui.AddText("x450 y113 w40 h20", FormatMS(Cooldowns[3])))
+    CooldownLabel.Push(MainGui.AddText("x450 y139 w40 h20", FormatMS(Cooldowns[4])))
+    CooldownLabel.Push(MainGui.AddText("x450 y165 w40 h20", FormatMS(Cooldowns[5])))
+    CooldownLabel.Push(MainGui.AddText("x450 y191 w40 h20", FormatMS(Cooldowns[6])))
+    CooldownLabel.Push(MainGui.AddText("x450 y217 w40 h20", FormatMS(Cooldowns[7])))
+
+    ; Create the settings tab
+    Tab.UseTab(3)
+
+    ; exe groupbox
+    MainGui.AddGroupBox("x7 y26 w184 h68", "Discord Application")
+    MainGui.AddText("x18 y45", "Executable Title:")
+    MainGui.AddComboBox("x14 y65 w170 h200000 vChosenExecutableTitle", ["Discord.exe", "DiscordPTB.exe", "DiscordCanary.exe"]).Choose(ExecutableTitle)
+
+    MainGui.Show("w490 h300")
 }
-
-; Create the main GUI window
-MainGui := Gui()
-MainGui.Title := 'Keybind Manager'
-MainGui.SetFont("s8 cDefault Norm", "Tahoma")
-
-
-; Create default bottom layout
-MainGui.AddText("x29 y268", "Made by coopw <3")
-MainGui.AddButton("x150 y260 w100 h30", "Reset").OnEvent("Click", Reset)
-MainGui.AddButton("x260 y260 w100 h30", "Save").OnEvent("Click", Save)
-MainGui.AddButton("x370 y260 w100 h30", "Finish").OnEvent("Click", Finish)
-
-Tab := MainGui.AddTab3("x0 y0 w500 h250 -Wrap", ["Keybinds", "Weapons", "Settings"])
-
-
-; Create the keybinds tab
-Tab.UseTab(1)
-
-; Dividing bars
-MainGui.AddText("x5 y50 w480 h2 0x7")
-MainGui.AddText("x37 y26 w1 h217 0x7")
-MainGui.AddText("x152 y26 w1 h217 0x7")
-MainGui.AddText("x355 y26 w1 h217 0x7")
-
-
-; Grid Key
-MainGui.AddText("x17 y29", "#")
-MainGui.AddText("x85 y29", "Key")
-MainGui.AddText("x230 y29", "Command")
-MainGui.AddText("x390 y29", "Cooldown (ms)")
-
-; Number Collumn
-MainGui.AddText("x17 y61", "1")
-MainGui.AddText("x17 y87", "2")
-MainGui.AddText("x17 y113", "3")
-MainGui.AddText("x17 y139", "4")
-MainGui.AddText("x17 y165", "5")
-MainGui.AddText("x17 y191", "6")
-MainGui.AddText("x17 y217", "7")
-
-; Key Collumn
-MainGui.AddHotkey("x44 y58 w102 h20 vChosenHotkey1", Hotkeys[1])
-MainGui.AddHotkey("w102 h20 vChosenHotkey2", Hotkeys[2])
-MainGui.AddHotkey("w102 h20 vChosenHotkey3", Hotkeys[3])
-MainGui.AddHotkey("w102 h20 vChosenHotkey4", Hotkeys[4])
-MainGui.AddHotkey("w102 h20 vChosenHotkey5", Hotkeys[5])
-MainGui.AddHotkey("w102 h20 vChosenHotkey6", Hotkeys[6])
-MainGui.AddHotkey("w102 h20 vChosenHotkey7", Hotkeys[7])
-
-; Keybind Collumn
-MainGui.AddEdit("x159 y58 w190 h20 vChosenCommand1", Commands[1])
-MainGui.AddEdit("w190 h20 vChosenCommand2", Commands[2])
-MainGui.AddEdit("w190 h20 vChosenCommand3", Commands[3])
-MainGui.AddEdit("w190 h20 vChosenCommand4", Commands[4])
-MainGui.AddEdit("w190 h20 vChosenCommand5", Commands[5])
-MainGui.AddEdit("w190 h20 vChosenCommand6", Commands[6])
-MainGui.AddEdit("w190 h20 vChosenCommand7", Commands[7])
-
-; Cooldown Collumn
-CooldownLabel := Array()
-MainGui.AddEdit("x362 y58 w80 h20 vChosenCooldown1", Cooldowns[1]).OnEvent("Change", UpdateCooldownLabel)
-MainGui.AddEdit("w80 h20 vChosenCooldown2", Cooldowns[2]).OnEvent("Change", UpdateCooldownLabel)
-MainGui.AddEdit("w80 h20 vChosenCooldown3", Cooldowns[3]).OnEvent("Change", UpdateCooldownLabel)
-MainGui.AddEdit("w80 h20 vChosenCooldown4", Cooldowns[4]).OnEvent("Change", UpdateCooldownLabel)
-MainGui.AddEdit("w80 h20 vChosenCooldown5", Cooldowns[5]).OnEvent("Change", UpdateCooldownLabel)
-MainGui.AddEdit("w80 h20 vChosenCooldown6", Cooldowns[6]).OnEvent("Change", UpdateCooldownLabel)
-MainGui.AddEdit("w80 h20 vChosenCooldown7", Cooldowns[7]).OnEvent("Change", UpdateCooldownLabel)
-
-CooldownLabel.Push(MainGui.AddText("x450 y61 w40 h20", FormatMS(Cooldowns[1])))
-CooldownLabel.Push(MainGui.AddText("x450 y87 w40 h20", FormatMS(Cooldowns[2])))
-CooldownLabel.Push(MainGui.AddText("x450 y113 w40 h20", FormatMS(Cooldowns[3])))
-CooldownLabel.Push(MainGui.AddText("x450 y139 w40 h20", FormatMS(Cooldowns[4])))
-CooldownLabel.Push(MainGui.AddText("x450 y165 w40 h20", FormatMS(Cooldowns[5])))
-CooldownLabel.Push(MainGui.AddText("x450 y191 w40 h20", FormatMS(Cooldowns[6])))
-CooldownLabel.Push(MainGui.AddText("x450 y217 w40 h20", FormatMS(Cooldowns[7])))
-
-; Create the settings tab
-Tab.UseTab(3)
-
-; exe groupbox
-MainGui.AddGroupBox("x7 y26 w184 h68", "Discord Application")
-MainGui.AddText("x18 y45", "Executable Title:")
-MainGui.AddComboBox("x14 y65 w170 h200000 vChosenExecutableTitle", ["Discord.exe", "DiscordPTB.exe", "DiscordCanary.exe"]).Choose(ExecutableTitle)
-
-MainGui.Show("w490 h300")
 
 ; Functions
 ForceClose(ExitReason, ExitCode) {
@@ -178,6 +160,7 @@ Save(*) {
 
     ; Save settings
     IniWrite(MainGui["ChosenExecutableTitle"].Text, "config.ini", "Settings", "ExecutableTitle")
+    IniWrite(FirstRun, "config.ini", "Settings", "FirstRun")
 }
 
 Finish(*) {
@@ -231,6 +214,7 @@ Reset(*) {
     Cooldowns[7] := IniRead("config.ini", "Keybind7", "Cooldown", "")
 
     ExecutableTitle := IniRead("config.ini", "Settings", "ExecutableTitle", "Discord.exe")
+    FirstRun := IniRead("config.ini", "Settings", "FirstRun", "true")
 
 
     ; Store last activation times
@@ -238,6 +222,13 @@ Reset(*) {
 
     ; Store hotkey activation states
     HotkeyActives := [false, false, false, false, false, false, false]
+
+    ; Create Hotkeys
+    for key in Hotkeys {
+        if (key != "") {
+            Hotkey key, RunCommand
+        }
+    }
 }
 
 FormatMS(ms) {
@@ -271,13 +262,28 @@ UpdateCooldownLabel(*) {
     }
 }
 
-sendCommand(Hotkey, Command, Cooldown, LastActivationTime, Active) {
-
-    if (!Active && (A_TickCount - LastActivationTime > Cooldown)) {
-        Active := true
-        LastActivationTime := A_TickCount
-        Send(Command)
+RunCommand(ThisHotkey)
+{
+    global Hotkeys, Commands, Cooldowns, HotkeyLastActivationTimes, HotkeyActives
+    ; Find the index of the hotkey
+    Index := 1
+    while (Index < 8)
+    {
+        if (Hotkeys[Index] = ThisHotkey)
+        {
+            break
+        }
+        Index++
     }
-    KeyWait Hotkey
-    Active := false
+
+    ; Send the command
+    if (!HotkeyActives[Index] && (A_TickCount - HotkeyLastActivationTimes[Index] > Cooldowns[Index]))
+    {
+        HotkeyActives[Index] := true
+        HotkeyLastActivationTimes[Index] := A_TickCount
+        Send(Commands[Index])
+        Send("{Enter}")
+    }
+    KeyWait ThisHotkey
+    HotkeyActives[Index] := false
 }
