@@ -1,4 +1,4 @@
-﻿#Requires AutoHotkey v2.0
+#Requires AutoHotkey v2.0
 #SingleInstance force
 OnExit ForceClose
 TraySetIcon "favicon.ico"
@@ -83,6 +83,13 @@ CooldownLabel.Push(MainGui.AddText("x450 y165 w40 h20", FormatMS(Cooldown5)))
 CooldownLabel.Push(MainGui.AddText("x450 y191 w40 h20", FormatMS(Cooldown6)))
 CooldownLabel.Push(MainGui.AddText("x450 y217 w40 h20", FormatMS(Cooldown7)))
 
+; Create the settings tab
+Tab.UseTab(3)
+
+; exe groupbox
+MainGui.AddGroupBox("x7 y26 w184 h68", "Discord Application")
+MainGui.AddText("x18 y45", "Executable Title:")
+MainGui.AddComboBox("x14 y65 w170 h200000 vChosenExecutableTitle", ["Discord.exe", "DiscordPTB.exe", "DiscordCanary.exe"]).Choose(ExecutableTitle)
 
 MainGui.Show("w490 h300")
 
@@ -134,6 +141,9 @@ Save(*) {
     IniWrite(MainGui["ChosenHotkey7"].Value, "config.ini", "Keybind7", "Hotkey")
     IniWrite(MainGui["ChosenCommand7"].Value, "config.ini", "Keybind7", "Command")
     IniWrite(MainGui["ChosenCooldown7"].Value, "config.ini", "Keybind7", "Cooldown")
+
+    ; Save settings
+    IniWrite(MainGui["ChosenExecutableTitle"].Text, "config.ini", "Settings", "ExecutableTitle")
 }
 
 Finish(*) {
@@ -181,6 +191,9 @@ Reset(*) {
     Hotkey7 := IniRead("config.ini", "Keybind7", "Hotkey", "")
     Command7 := IniRead("config.ini", "Keybind7", "Command", "")
     Cooldown7 := IniRead("config.ini", "Keybind7", "Cooldown", "")
+
+    ExecutableTitle := IniRead("config.ini", "Settings", "ExecutableTitle", "Discord.exe")
+
 }
 
 FormatMS(ms) {
