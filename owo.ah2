@@ -97,7 +97,7 @@ ForceClose(ExitReason, ExitCode) {
             return 1
         }
     } else {
-        MsgBox("Error: " ExitReason " (" ExitCode ")")
+        ; MsgBox("Error: " ExitReason " (" ExitCode ")")
         return 0
     }
 
