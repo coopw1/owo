@@ -104,7 +104,7 @@ CreateGUI(*) {
     Tab.UseTab(2)
 
     ; Button to show explaination
-    MainGui.AddButton("x7 y26 w250 h20", "How to use the weapon tab").OnEvent("Click", (*) => MsgBox("To use the weapon hotkey, copy a list of weapon IDs from the game (e.g. `"1JYFRJ 3HXUCU 6FDSRK 8EJ2UP 3IQMS2`") and press the weapon hotkey. It will send the one weapon ID at a time, sending each ID once."))
+    MainGui.AddButton("x7 y26 w250 h20", "How to use the weapon hotkey").OnEvent("Click", (*) => MsgBox("To use the weapon hotkey, copy a list of weapon IDs from the game (e.g. `"1JYFRJ 3HXUCU 6FDSRK 8EJ2UP 3IQMS2`") and press the weapon hotkey. It will send the one weapon ID at a time, sending each ID once."))
 
     MainGui.AddGroupBox("x7 y52 w250 h217", "Weapon IDs")
     WeaponIdsBox := MainGui.AddEdit("x14 y71 w238 h190 ReadOnly")
