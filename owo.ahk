@@ -2,7 +2,7 @@
 #SingleInstance force
 OnExit ForceClose
 Reset
-TraySetIcon "favicon.ico"
+TraySetIcon "images/favicon.ico"
 TrayTip "coopw's Keybind Manager running!", "OwO", 4
 
 A_TrayMenu.Delete()
@@ -12,12 +12,14 @@ A_TrayMenu.Add()
 A_TrayMenu.Add("Close", (*) => ExitApp())
 A_TrayMenu.Add()
 A_TrayMenu.Default := "Edit Keybinds"
-
+CreateGUI()
 if (FirstRun = "true") {
-    CreateGUI()
+
     MsgBox("Welcome to coopw's Keybind Manager! This is your first time running the program, so you can edit your keybinds here. From now on, you can access this window by right-clicking the tray icon and selecting 'Edit Keybinds'.")
     FirstRun := "false"
 }
+
+OnClipboardChange ClipChanged
 
 
 CreateGUI(*) {
@@ -98,6 +100,26 @@ CreateGUI(*) {
     CooldownLabel.Push(MainGui.AddText("x450 y191 w40 h20", FormatMS(Cooldowns[6])))
     CooldownLabel.Push(MainGui.AddText("x450 y217 w40 h20", FormatMS(Cooldowns[7])))
 
+    ; Create the weapons tab
+    Tab.UseTab(2)
+
+    ; Button to show explaination
+    MainGui.AddButton("x7 y26 w250 h20", "How to use the weapon tab").OnEvent("Click", (*) => MsgBox("To use the weapon hotkey, copy a list of weapon IDs from the game (e.g. `"1JYFRJ 3HXUCU 6FDSRK 8EJ2UP 3IQMS2`") and press the weapon hotkey. It will send the one weapon ID at a time, sending each ID once."))
+
+    MainGui.AddGroupBox("x7 y52 w250 h217", "Weapon IDs")
+    WeaponIdsBox := MainGui.AddEdit("x14 y71 w238 h190 ReadOnly")
+
+    MainGui.AddGroupBox("x263 y26 w222 h95", "Settings")
+    MainGui.AddText("x274 y45", "Keybind:")
+    MainGui.AddHotkey("x320 y42 w158 h20 vChosenHotkeyWeapon", WeaponHotkey)
+    MainGui.AddText("x274 y71", "Cooldown:")
+    MainGui.AddEdit("x329 y68 w149 h20 vChosenCooldownWeapon", WeaponCooldown)
+    MainGui.AddText("x274 y96", "Neon Util Mode:")
+    MainGui.AddCheckbox("x357 y97 vChosenNeonUtilMode")
+    MainGui.AddButton("x387 y94 w80 h20", "What's This?").OnEvent("Click", (*) => MsgBox("This allows you to copy the weapon IDs with no spaces in between (e.g. `"1JYFRJ3HXUCU6FDSRK8EJ2UP3IQMS2`"). This is useful when copying from something other than `"owow`", as you may not always be copying spaces aswell."))
+
+    MainGui.AddPicture("x274 y120 w200 h120", "images/colonthree.png")
+
     ; Create the settings tab
     Tab.UseTab(3)
 
@@ -157,6 +179,10 @@ Save(*) {
     IniWrite(MainGui["ChosenHotkey7"].Value, "config.ini", "Keybind7", "Hotkey")
     IniWrite(MainGui["ChosenCommand7"].Value, "config.ini", "Keybind7", "Command")
     IniWrite(MainGui["ChosenCooldown7"].Value, "config.ini", "Keybind7", "Cooldown")
+
+    ; Save weapon tab
+    IniWrite(MainGui["ChosenHotkeyWeapon"].Value, "config.ini", "Settings", "WeaponHotkey")
+    IniWrite(MainGui["ChosenCooldownWeapon"].Value, "config.ini", "Settings", "WeaponCooldown")
 
     ; Save settings
     IniWrite(MainGui["ChosenExecutableTitle"].Text, "config.ini", "Settings", "ExecutableTitle")
@@ -231,15 +257,20 @@ Reset(*) {
     Commands[7] := IniRead("config.ini", "Keybind7", "Command", "")
     Cooldowns[7] := IniRead("config.ini", "Keybind7", "Cooldown", "")
 
+    WeaponHotkey := IniRead("config.ini", "Settings", "WeaponHotkey", "F9")
+    WeaponCooldown := IniRead("config.ini", "Settings", "WeaponCooldown", "5000")
+
     ExecutableTitle := IniRead("config.ini", "Settings", "ExecutableTitle", "Discord.exe")
     FirstRun := IniRead("config.ini", "Settings", "FirstRun", "true")
 
 
     ; Store last activation times
     HotkeyLastActivationTimes := [0, 0, 0, 0, 0, 0, 0]
+    WeaponHotkeyLastActivationTime := 0
 
     ; Store hotkey activation states
     HotkeyActives := [false, false, false, false, false, false, false]
+    WeaponHotkeyActive := false
 
     ; Create Hotkeys
     for key in Hotkeys {
@@ -248,6 +279,13 @@ Reset(*) {
             HotIfWinActive WindowFilter
             Hotkey key, RunCommand
         }
+    }
+
+    ; Create Weapon Hotkey
+    if (WeaponHotkey != "") {
+        WindowFilter := "ahk_exe " ExecutableTitle
+        HotIfWinActive WindowFilter
+        Hotkey WeaponHotkey, RunWeaponCommand
     }
 }
 
@@ -269,6 +307,15 @@ FormatMS(ms) {
         return Round(seconds / 60, 1) "m"
     } else {
         return Round(seconds / 3600, 1) "h"
+    }
+}
+
+ClipChanged(*) {
+    global
+    if (WinActive("ahk_exe DiscordCanary.exe")) {
+        global weaponIDCounter := 1
+        global weaponIDs := StrSplit(A_Clipboard, A_Space)
+        WeaponIdsBox.Text := A_Clipboard
     }
 }
 
@@ -306,4 +353,30 @@ RunCommand(ThisHotkey)
     }
     KeyWait ThisHotkey
     HotkeyActives[Index] := false
+}
+
+; RunWeaponCommand(ThisHotkey)
+; {
+;     global weaponIDCounter, weaponIDs
+;     if (WinActive("ahk_exe DiscordCanary.exe")) {
+;         if (weaponIDCounter <= weaponIDs.Length) {
+;             Send("owow " weaponIDs[weaponIDCounter] "{Enter}")
+;             weaponIDCounter++
+;         }
+;     }
+; }
+
+RunWeaponCommand(ThisHotkey)
+{
+    global WeaponHotkeyLastActivationTime, WeaponHotkeyActive, weaponIDCounter, weaponIDs
+    if (!WeaponHotkeyActive &&
+        (A_TickCount - WeaponHotkeyLastActivationTime > WeaponCooldown) &&
+        weaponIDs[weaponIDCounter] != "") {
+        WeaponHotkeyActive := true
+        WeaponHotkeyLastActivationTime := A_TickCount
+        Send("owow " weaponIDs[weaponIDCounter] "{Enter}")
+        weaponIDCounter++
+    }
+    KeyWait ThisHotkey
+    WeaponHotkeyActive := false
 }
