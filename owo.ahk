@@ -1,4 +1,4 @@
-#Requires AutoHotkey v2.0
+﻿#Requires AutoHotkey v2.0
 #SingleInstance force
 OnExit ForceClose
 Reset
@@ -128,6 +128,12 @@ CreateGUI(*) {
     MainGui.AddText("x18 y45", "Executable Title:")
     MainGui.AddComboBox("x14 y65 w170 h200000 vChosenExecutableTitle", ["Discord.exe", "DiscordPTB.exe", "DiscordCanary.exe"]).Choose(ExecutableTitle)
 
+    ; Add "Run at startup" option
+    MainGui.AddGroupBox("x197 y26 w288 h68", "General")
+    MainGui.AddText("x207 y45", "Run at startup:")
+    StartupButton := MainGui.AddCheckbox("x285 y46 vChosenRunAtStartup")
+    StartupButton.Value := RunAtStartup
+
     MainGui.Show("w490 h300")
 }
 
@@ -187,6 +193,8 @@ Save(*) {
     ; Save settings
     IniWrite(MainGui["ChosenExecutableTitle"].Text, "config.ini", "Settings", "ExecutableTitle")
     IniWrite(FirstRun, "config.ini", "Settings", "FirstRun")
+    IniWrite(MainGui["ChosenRunAtStartup"].Value, "config.ini", "Settings", "RunAtStartup")
+    AddStartup()
 
     Reset
 }
@@ -262,6 +270,7 @@ Reset(*) {
 
     ExecutableTitle := IniRead("config.ini", "Settings", "ExecutableTitle", "Discord.exe")
     FirstRun := IniRead("config.ini", "Settings", "FirstRun", "true")
+    RunAtStartup := IniRead("config.ini", "Settings", "RunAtStartup", "0")
 
 
     ; Store last activation times
@@ -368,4 +377,13 @@ RunWeaponCommand(ThisHotkey)
     }
     KeyWait ThisHotkey
     WeaponHotkeyActive := false
+}
+
+AddStartup(*) {
+    global
+    if (StartupButton.Value == "1") {
+        FileCreateShortcut A_ScriptFullPath, A_Startup "\" A_ScriptName ".lnk"
+    } else if (FileExist(A_Startup "\" A_ScriptName ".lnk")) {
+        FileDelete A_Startup "\" A_ScriptName ".lnk"
+    }
 }
