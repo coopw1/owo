@@ -53,6 +53,7 @@ CreateGUI(*) {
     MainGui.AddText("x17 y29", "#")
     MainGui.AddText("x85 y29", "Key")
     MainGui.AddText("x230 y29", "Command")
+    MainGui.AddText("x312 y38 BackgroundTrans", "Autosend").SetFont("s7 cDefault Norm")
     MainGui.AddText("x390 y29", "Cooldown (ms)")
 
     ; Number Collumn
@@ -74,13 +75,23 @@ CreateGUI(*) {
     MainGui.AddHotkey("w102 h20 vChosenHotkey7", Hotkeys[7])
 
     ; Keybind Collumn
-    MainGui.AddEdit("x159 y58 w190 h20 vChosenCommand1", Commands[1])
-    MainGui.AddEdit("w190 h20 vChosenCommand2", Commands[2])
-    MainGui.AddEdit("w190 h20 vChosenCommand3", Commands[3])
-    MainGui.AddEdit("w190 h20 vChosenCommand4", Commands[4])
-    MainGui.AddEdit("w190 h20 vChosenCommand5", Commands[5])
-    MainGui.AddEdit("w190 h20 vChosenCommand6", Commands[6])
-    MainGui.AddEdit("w190 h20 vChosenCommand7", Commands[7])
+    MainGui.AddEdit("x159 y58 w151 h20 vChosenCommand1", Commands[1])
+    MainGui.AddEdit("w151 h20 vChosenCommand2", Commands[2])
+    MainGui.AddEdit("w151 h20 vChosenCommand3", Commands[3])
+    MainGui.AddEdit("w151 h20 vChosenCommand4", Commands[4])
+    MainGui.AddEdit("w151 h20 vChosenCommand5", Commands[5])
+    MainGui.AddEdit("w151 h20 vChosenCommand6", Commands[6])
+    MainGui.AddEdit("w151 h20 vChosenCommand7", Commands[7])
+
+    ; Autosend Collumn
+    MainGui.AddCheckbox("x326 y62 vChosenAutosend1").Value := Autostarts[1]
+    MainGui.AddCheckbox("x326 y88 vChosenAutosend2").Value := Autostarts[2]
+    MainGui.AddCheckbox("x326 y114 vChosenAutosend3").Value := Autostarts[3]
+    MainGui.AddCheckbox("x326 y140 vChosenAutosend4").Value := Autostarts[4]
+    MainGui.AddCheckbox("x326 y166 vChosenAutosend5").Value := Autostarts[5]
+    MainGui.AddCheckbox("x326 y192 vChosenAutosend6").Value := Autostarts[6]
+    MainGui.AddCheckbox("x326 y218 vChosenAutosend7").Value := Autostarts[7]
+
 
     ; Cooldown Collumn
     CooldownLabel := Array()
@@ -160,30 +171,37 @@ Save(*) {
     ; Save keybinds
     IniWrite(MainGui["ChosenHotkey1"].Value, "config.ini", "Keybind1", "Hotkey")
     IniWrite(MainGui["ChosenCommand1"].Value, "config.ini", "Keybind1", "Command")
+    IniWrite(MainGui["ChosenAutosend1"].Value, "config.ini", "Keybind1", "Autosend")
     IniWrite(MainGui["ChosenCooldown1"].Value, "config.ini", "Keybind1", "Cooldown")
 
     IniWrite(MainGui["ChosenHotkey2"].Value, "config.ini", "Keybind2", "Hotkey")
     IniWrite(MainGui["ChosenCommand2"].Value, "config.ini", "Keybind2", "Command")
+    IniWrite(MainGui["ChosenAutosend2"].Value, "config.ini", "Keybind2", "Autosend")
     IniWrite(MainGui["ChosenCooldown2"].Value, "config.ini", "Keybind2", "Cooldown")
 
     IniWrite(MainGui["ChosenHotkey3"].Value, "config.ini", "Keybind3", "Hotkey")
     IniWrite(MainGui["ChosenCommand3"].Value, "config.ini", "Keybind3", "Command")
+    IniWrite(MainGui["ChosenAutosend3"].Value, "config.ini", "Keybind3", "Autosend")
     IniWrite(MainGui["ChosenCooldown3"].Value, "config.ini", "Keybind3", "Cooldown")
 
     IniWrite(MainGui["ChosenHotkey4"].Value, "config.ini", "Keybind4", "Hotkey")
     IniWrite(MainGui["ChosenCommand4"].Value, "config.ini", "Keybind4", "Command")
+    IniWrite(MainGui["ChosenAutosend4"].Value, "config.ini", "Keybind4", "Autosend")
     IniWrite(MainGui["ChosenCooldown4"].Value, "config.ini", "Keybind4", "Cooldown")
 
     IniWrite(MainGui["ChosenHotkey5"].Value, "config.ini", "Keybind5", "Hotkey")
     IniWrite(MainGui["ChosenCommand5"].Value, "config.ini", "Keybind5", "Command")
+    IniWrite(MainGui["ChosenAutosend5"].Value, "config.ini", "Keybind5", "Autosend")
     IniWrite(MainGui["ChosenCooldown5"].Value, "config.ini", "Keybind5", "Cooldown")
 
     IniWrite(MainGui["ChosenHotkey6"].Value, "config.ini", "Keybind6", "Hotkey")
     IniWrite(MainGui["ChosenCommand6"].Value, "config.ini", "Keybind6", "Command")
+    IniWrite(MainGui["ChosenAutosend6"].Value, "config.ini", "Keybind6", "Autosend")
     IniWrite(MainGui["ChosenCooldown6"].Value, "config.ini", "Keybind6", "Cooldown")
 
     IniWrite(MainGui["ChosenHotkey7"].Value, "config.ini", "Keybind7", "Hotkey")
     IniWrite(MainGui["ChosenCommand7"].Value, "config.ini", "Keybind7", "Command")
+    IniWrite(MainGui["ChosenAutosend7"].Value, "config.ini", "Keybind7", "Autosend")
     IniWrite(MainGui["ChosenCooldown7"].Value, "config.ini", "Keybind7", "Cooldown")
 
     ; Save weapon tab
@@ -234,35 +252,43 @@ Reset(*) {
 
     Hotkeys := Array([], [], [], [], [], [], [])
     Cooldowns := Array([], [], [], [], [], [], [])
+    Autostarts := Array([], [], [], [], [], [], [])
     Commands := Array([], [], [], [], [], [], [])
 
     ; Read config
     Hotkeys[1] := IniRead("config.ini", "Keybind1", "Hotkey", "del")
     Commands[1] := IniRead("config.ini", "Keybind1", "Command", "owob")
+    Autostarts[1] := IniRead("config.ini", "Keybind1", "Autosend", "1")
     Cooldowns[1] := IniRead("config.ini", "Keybind1", "Cooldown", "15000")
 
     Hotkeys[2] := IniRead("config.ini", "Keybind2", "Hotkey", "end")
     Commands[2] := IniRead("config.ini", "Keybind2", "Command", "owoh")
+    Autostarts[2] := IniRead("config.ini", "Keybind2", "Autosend", "1")
     Cooldowns[2] := IniRead("config.ini", "Keybind2", "Cooldown", "15000")
 
     Hotkeys[3] := IniRead("config.ini", "Keybind3", "Hotkey", "PgUp")
     Commands[3] := IniRead("config.ini", "Keybind3", "Command", "owo")
+    Autostarts[3] := IniRead("config.ini", "Keybind3", "Autosend", "1")
     Cooldowns[3] := IniRead("config.ini", "Keybind3", "Cooldown", "10000")
 
     Hotkeys[4] := IniRead("config.ini", "Keybind4", "Hotkey", "PgDn")
     Commands[4] := IniRead("config.ini", "Keybind4", "Command", "owobuy 1")
+    Autostarts[4] := IniRead("config.ini", "Keybind4", "Autosend", "1")
     Cooldowns[4] := IniRead("config.ini", "Keybind4", "Cooldown", "5000")
 
     Hotkeys[5] := IniRead("config.ini", "Keybind5", "Hotkey", "F12")
     Commands[5] := IniRead("config.ini", "Keybind5", "Command", "owocurse 434538030691254273")
+    Autostarts[5] := IniRead("config.ini", "Keybind5", "Autosend", "1")
     Cooldowns[5] := IniRead("config.ini", "Keybind5", "Cooldown", "300000")
 
     Hotkeys[6] := IniRead("config.ini", "Keybind6", "Hotkey", "")
     Commands[6] := IniRead("config.ini", "Keybind6", "Command", "")
+    Autostarts[6] := IniRead("config.ini", "Keybind6", "Autosend", "1")
     Cooldowns[6] := IniRead("config.ini", "Keybind6", "Cooldown", "")
 
     Hotkeys[7] := IniRead("config.ini", "Keybind7", "Hotkey", "")
     Commands[7] := IniRead("config.ini", "Keybind7", "Command", "")
+    Autostarts[7] := IniRead("config.ini", "Keybind7", "Autosend", "1")
     Cooldowns[7] := IniRead("config.ini", "Keybind7", "Cooldown", "")
 
     WeaponHotkey := IniRead("config.ini", "Settings", "WeaponHotkey", "F9")
@@ -358,7 +384,9 @@ RunCommand(ThisHotkey)
         HotkeyActives[Index] := true
         HotkeyLastActivationTimes[Index] := A_TickCount
         Send(Commands[Index])
-        Send("{Enter}")
+        if (MainGui["ChosenAutosend1" Index].Value == "1") {
+            Send("{Enter}")
+        }
     }
     KeyWait ThisHotkey
     HotkeyActives[Index] := false
