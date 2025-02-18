@@ -1,4 +1,4 @@
-﻿#Requires AutoHotkey v2.0
+#Requires AutoHotkey v2.0
 #SingleInstance force
 OnExit ForceClose
 Reset
@@ -354,17 +354,6 @@ RunCommand(ThisHotkey)
     KeyWait ThisHotkey
     HotkeyActives[Index] := false
 }
-
-; RunWeaponCommand(ThisHotkey)
-; {
-;     global weaponIDCounter, weaponIDs
-;     if (WinActive("ahk_exe DiscordCanary.exe")) {
-;         if (weaponIDCounter <= weaponIDs.Length) {
-;             Send("owow " weaponIDs[weaponIDCounter] "{Enter}")
-;             weaponIDCounter++
-;         }
-;     }
-; }
 
 RunWeaponCommand(ThisHotkey)
 {
