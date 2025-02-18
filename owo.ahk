@@ -384,7 +384,7 @@ RunCommand(ThisHotkey)
         HotkeyActives[Index] := true
         HotkeyLastActivationTimes[Index] := A_TickCount
         Send(Commands[Index])
-        if (MainGui["ChosenAutosend1" Index].Value == "1") {
+        if (MainGui["ChosenAutosend" Index].Value == "1") {
             Send("{Enter}")
         }
     }
