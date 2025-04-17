@@ -35,6 +35,7 @@ CreateGUI(*) {
     MainGui.AddButton("x150 y260 w100 h30", "Reset").OnEvent("Click", Reset)
     MainGui.AddButton("x260 y260 w100 h30", "Save").OnEvent("Click", Save)
     MainGui.AddButton("x370 y260 w100 h30", "Finish").OnEvent("Click", Finish)
+    MainGui.AddText("x444 y290", "Ver. 0.1.6").SetFont("s7 cDefault Norm")
 
     Tab := MainGui.AddTab3("x0 y0 w500 h250 -Wrap", ["Keybinds", "Weapons", "Settings"])
 
